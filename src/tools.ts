@@ -4,8 +4,11 @@
  */
 import { tool } from "ai";
 import { z } from "zod";
+import { Resend } from "resend";
 
 import { agentContext } from "./server";
+import { MemoryStore } from "./memory";
+import { EmailTemplate } from "./emails/email-template";
 import {
   unstable_getSchedulePrompt,
   unstable_scheduleSchema,
@@ -119,6 +122,159 @@ const cancelScheduledTask = tool({
 });
 
 /**
+ * Memory tools for storing and retrieving information
+ */
+const storeMemory = tool({
+  description: "Store information in the agent's memory for future reference",
+  parameters: z.object({
+    key: z.string().describe("The unique identifier for this memory"),
+    value: z.string().describe("The information to remember"),
+  }),
+  execute: async ({ key, value }) => {
+    const agent = agentContext.getStore();
+    if (!agent) {
+      throw new Error("No agent found");
+    }
+
+    // Access and update the agent's memory state
+    const memories = agent.state.memories || {};
+    memories[key] = {
+      value,
+      timestamp: new Date().toISOString(),
+    };
+
+    // Update the state
+    await agent.setState({ memories });
+    return `Remembered: ${key} = ${value}`;
+  },
+});
+
+const retrieveMemory = tool({
+  description: "Retrieve information from the agent's memory",
+  parameters: z.object({
+    key: z
+      .string()
+      .describe("The unique identifier for the memory to retrieve"),
+  }),
+  execute: async ({ key }) => {
+    const agent = agentContext.getStore();
+    if (!agent) {
+      throw new Error("No agent found");
+    }
+
+    const memories = agent.state.memories || {};
+    const memory = memories[key];
+
+    if (!memory) {
+      return `I don't have any memory stored for '${key}'`;
+    }
+    return `I remember: ${key} = ${memory.value}`;
+  },
+});
+
+const listMemories = tool({
+  description: "List all memories the agent has stored",
+  parameters: z.object({}),
+  execute: async () => {
+    const agent = agentContext.getStore();
+    if (!agent) {
+      throw new Error("No agent found");
+    }
+
+    const memories = agent.state.memories || {};
+    const memoryKeys = Object.keys(memories);
+
+    if (memoryKeys.length === 0) {
+      return "I don't have any memories stored yet.";
+    }
+
+    const formattedMemories = memoryKeys
+      .map((key) => `${key}: ${memories[key].value}`)
+      .join("\n");
+
+    return `Here are my memories:\n${formattedMemories}`;
+  },
+});
+
+const forgetMemory = tool({
+  description: "Remove a specific memory from the agent's storage",
+  parameters: z.object({
+    key: z.string().describe("The unique identifier for the memory to forget"),
+  }),
+  execute: async ({ key }) => {
+    const agent = agentContext.getStore();
+    if (!agent) {
+      throw new Error("No agent found");
+    }
+
+    const memories = agent.state.memories || {};
+    const exists = memories[key] !== undefined;
+
+    if (exists) {
+      // Create a new memories object without the specified key
+      const updatedMemories = { ...memories };
+      delete updatedMemories[key];
+
+      // Update the state
+      await agent.setState({ memories: updatedMemories });
+      return `I've forgotten the information about '${key}'`;
+    }
+
+    return `I didn't have any memory stored for '${key}'`;
+  },
+});
+
+/**
+ * Email tool for sending emails using Resend
+ */
+const sendEmail = tool({
+  description: "Send an email to a recipient using Resend service",
+  parameters: z.object({
+    to: z.string().describe("Email address of the recipient"),
+    subject: z.string().describe("Subject line of the email"),
+    firstName: z.string().describe("First name of the recipient"),
+    message: z.string().describe("Main content of the email"),
+  }),
+  execute: async ({ to, subject, firstName, message }) => {
+    try {
+      // For now, we'll use a demo key or get from process.env
+      // In production, you would get this from your environment configuration
+      const resendApiKey = process.env.RESEND_API_KEY || "re_123456789"; // Use a placeholder key for now
+
+      // Initialize Resend client
+      const resend = new Resend(resendApiKey);
+
+      // Send the email with plain text instead of React component
+      const data = await resend.emails.send({
+        from: "AI Agent <hi@updates.fp.dev>",
+        to: [to],
+        subject: subject,
+        html: `
+          <div>
+            <h1>${subject}</h1>
+            <p>Hello ${firstName},</p>
+            <p>${message}</p>
+            <p>Best regards,</p>
+            <p>Your AI Assistant</p>
+          </div>
+        `,
+      });
+
+      // Handle potential errors from the API response
+      if (data.error) {
+        return `Failed to send email: ${data.error.message}`;
+      }
+
+      return `Email successfully sent to ${to} with subject "${subject}"`;
+    } catch (error: any) {
+      // Type the error as any to access message property
+      const errorMessage = error.message || "Unknown error occurred";
+      return `Error sending email: ${errorMessage}`;
+    }
+  },
+});
+
+/**
  * Export all available tools
  * These will be provided to the AI model to describe available capabilities
  */
@@ -128,6 +284,11 @@ export const tools = {
   scheduleTask,
   getScheduledTasks,
   cancelScheduledTask,
+  storeMemory,
+  retrieveMemory,
+  listMemories,
+  forgetMemory,
+  sendEmail,
 };
 
 /**

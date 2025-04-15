@@ -1,19 +1,38 @@
-import { routeAgentRequest, type Schedule } from "agents";
-
+import { routeAgentRequest, type Schedule, type AgentNamespace } from "agents";
 import { unstable_getSchedulePrompt } from "agents/schedule";
-
 import { AIChatAgent } from "agents/ai-chat-agent";
 import {
   createDataStreamResponse,
   generateId,
   streamText,
   type StreamTextOnFinishCallback,
+  type Message,
 } from "ai";
 import { openai } from "@ai-sdk/openai";
 import { processToolCalls } from "./utils";
 import { tools, executions } from "./tools";
 import { AsyncLocalStorage } from "node:async_hooks";
+import { Observed, fiberplane } from "@fiberplane/agents";
 // import { env } from "cloudflare:workers";
+
+// Environment variables type definition
+export type Env = {
+  OPENAI_API_KEY: string;
+  RESEND_API_KEY: string;
+  Chat: AgentNamespace<Chat>;
+};
+
+// Memory state interface
+interface MemoryState {
+  memories: Record<
+    string,
+    {
+      value: string;
+      timestamp: string;
+      context?: string;
+    }
+  >;
+}
 
 const model = openai("gpt-4o-2024-11-20");
 // Cloudflare AI Gateway
@@ -27,7 +46,10 @@ export const agentContext = new AsyncLocalStorage<Chat>();
 /**
  * Chat Agent implementation that handles real-time AI chat interactions
  */
-export class Chat extends AIChatAgent<Env> {
+@Observed()
+class Chat extends AIChatAgent<Env, MemoryState> {
+  initialState = { memories: {} };
+  
   /**
    * Handles incoming chat messages and manages the response stream
    * @param onFinish - Callback function executed when streaming completes
@@ -51,11 +73,29 @@ export class Chat extends AIChatAgent<Env> {
           // Stream the AI response using GPT-4
           const result = streamText({
             model,
-            system: `You are a helpful assistant that can do various tasks... 
+            system: `You are a helpful assistant that can do various tasks...
 
 ${unstable_getSchedulePrompt({ date: new Date() })}
 
 If the user asks to schedule a task, use the schedule tool to schedule the task.
+
+# Memory Capabilities
+You have the ability to remember information across conversations using your memory tools:
+- Use 'storeMemory' to remember information (e.g., user preferences, names, facts)
+- Use 'retrieveMemory' to recall stored information
+- Use 'listMemories' to see all stored information
+- Use 'forgetMemory' to remove specific information
+
+When a user tells you information like their name, preferences, or important facts they want you to remember, always use storeMemory to save it. You should also proactively check your memory using retrieveMemory when contextually relevant.
+
+# Email Capabilities
+You can send emails on behalf of the user using the 'sendEmail' tool:
+- When to use: When a user asks you to send an email or when it's appropriate to follow up via email
+- Required information: recipient email address, subject, recipient's first name, and the email message
+- Be professional and clear in your email communications
+- Always confirm with the user before sending an email
+
+Example: If a user says "Send an email to john@example.com about our meeting tomorrow", ask for any missing details, then use the sendEmail tool.
 `,
             messages: processedMessages,
             tools,
@@ -90,25 +130,31 @@ If the user asks to schedule a task, use the schedule tool to schedule the task.
 /**
  * Worker entry point that routes incoming requests to the appropriate handler
  */
-export default {
-  async fetch(request: Request, env: Env, ctx: ExecutionContext) {
-    const url = new URL(request.url);
+const worker = {
+  fetch: fiberplane(
+    async (request: Request, env: Env, ctx: ExecutionContext) => {
+      const url = new URL(request.url);
 
-    if (url.pathname === "/check-open-ai-key") {
-      const hasOpenAIKey = !!process.env.OPENAI_API_KEY;
-      return Response.json({
-        success: hasOpenAIKey,
-      });
-    }
-    if (!process.env.OPENAI_API_KEY) {
-      console.error(
-        "OPENAI_API_KEY is not set, don't forget to set it locally in .dev.vars, and use `wrangler secret bulk .dev.vars` to upload it to production"
+      if (url.pathname === "/check-open-ai-key") {
+        const hasOpenAIKey = !!process.env.OPENAI_API_KEY;
+        return Response.json({
+          success: hasOpenAIKey,
+        });
+      }
+      if (!process.env.OPENAI_API_KEY) {
+        console.error(
+          "OPENAI_API_KEY is not set, don't forget to set it locally in .dev.vars, and use `wrangler secret bulk .dev.vars` to upload it to production"
+        );
+        return new Response("OPENAI_API_KEY is not set", { status: 500 });
+      }
+      return (
+        // Route the request to our agent or return 404 if not found
+        (await routeAgentRequest(request, env)) ||
+        new Response("Not found", { status: 404 })
       );
-    }
-    return (
-      // Route the request to our agent or return 404 if not found
-      (await routeAgentRequest(request, env)) ||
-      new Response("Not found", { status: 404 })
-    );
-  },
-} satisfies ExportedHandler<Env>;
+    },
+  ),
+};
+
+export { Chat };
+export default worker;
