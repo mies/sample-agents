@@ -4,6 +4,7 @@ import { useAgentChat } from "agents/ai-react";
 import type { Message } from "@ai-sdk/react";
 import { APPROVAL } from "./shared";
 import type { tools } from "./tools";
+import ReactMarkdown from "react-markdown";
 
 // Component imports
 import { Button } from "@/components/button/Button";
@@ -15,6 +16,7 @@ import { Tooltip } from "@/components/tooltip/Tooltip";
 
 // Icon imports
 import {
+  ArrowSquareOut,
   Bug,
   Moon,
   PaperPlaneRight,
@@ -239,12 +241,41 @@ export default function Chat() {
                                       🕒
                                     </span>
                                   )}
-                                  <p className="text-sm whitespace-pre-wrap">
-                                    {part.text.replace(
-                                      /^scheduled message: /,
-                                      ""
-                                    )}
-                                  </p>
+                                  <div className="text-sm whitespace-pre-wrap">
+                                    <ReactMarkdown
+                                      components={{
+                                        a: ({ node, ...props }) => {
+                                          const isAuthLink =
+                                            props.href
+                                              ?.toLowerCase()
+                                              .includes("authorize") ||
+                                            (props.children &&
+                                              typeof props.children ===
+                                                "string" &&
+                                              props.children
+                                                .toLowerCase()
+                                                .includes("authorize"));
+
+                                          return (
+                                            <a
+                                              {...props}
+                                              target="_blank"
+                                              rel="noopener noreferrer"
+                                              className={`inline-flex items-center gap-1 ${isAuthLink ? "text-[#F48120] font-medium" : "text-blue-500"}`}
+                                            >
+                                              {props.children}
+                                              <ArrowSquareOut className="h-3 w-3" />
+                                            </a>
+                                          );
+                                        },
+                                      }}
+                                    >
+                                      {part.text.replace(
+                                        /^scheduled message: /,
+                                        ""
+                                      )}
+                                    </ReactMarkdown>
+                                  </div>
                                 </Card>
                                 <p
                                   className={`text-xs text-muted-foreground mt-1 ${

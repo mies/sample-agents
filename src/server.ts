@@ -13,6 +13,7 @@ import { processToolCalls } from "./utils";
 import { tools, executions } from "./tools";
 import { AsyncLocalStorage } from "node:async_hooks";
 import { Observed, fiberplane } from "@fiberplane/agents";
+import { MCPClientManager } from "agents/mcp/client";
 // import { env } from "cloudflare:workers";
 
 // Environment variables type definition
@@ -43,13 +44,51 @@ const model = openai("gpt-4o-2024-11-20");
 
 // we use ALS to expose the agent context to the tools
 export const agentContext = new AsyncLocalStorage<Chat>();
+
+const agentNamespace = "chat";
 /**
  * Chat Agent implementation that handles real-time AI chat interactions
  */
 @Observed()
-class Chat extends AIChatAgent<Env, MemoryState> {
+export class Chat extends AIChatAgent<Env, MemoryState> {
   initialState = { memories: {} };
-  
+
+  mcp_: MCPClientManager | undefined;
+
+  onStart() {
+    this.mcp_ = new MCPClientManager("chat", "1.0.0", {
+      baseCallbackUri: `${this.env.HOST}/agents/${agentNamespace}/${this.name}/callback`,
+      storage: this.ctx.storage,
+    });
+  }
+
+  async addMcpServer(url: string) {
+    const { id, authUrl } = await this.mcp.connect(url);
+    console.log(`Added MCP server with ID: ${id}`);
+    return authUrl ?? "";
+  }
+
+  get mcp() {
+    if (!this.mcp_) {
+      throw new Error("MCPClientManager not initialized");
+    }
+
+    return this.mcp_;
+  }
+
+  async onRequest(request: Request) {
+    if (this.mcp.isCallbackRequest(request)) {
+      const { serverId } = await this.mcp.handleCallbackRequest(request);
+
+      return new Response(JSON.stringify({ serverId }), {
+        headers: { "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
+    return super.onRequest(request);
+  }
+
   /**
    * Handles incoming chat messages and manages the response stream
    * @param onFinish - Callback function executed when streaming completes
@@ -152,9 +191,8 @@ const worker = {
         (await routeAgentRequest(request, env)) ||
         new Response("Not found", { status: 404 })
       );
-    },
+    }
   ),
 };
 
-export { Chat };
 export default worker;
