@@ -39,6 +39,8 @@ const getLocalTime = tool({
   },
 });
 
+
+
 const scheduleTask = tool({
   description: "A tool to schedule a task to be executed at a later time",
   parameters: unstable_scheduleSchema,
@@ -296,6 +298,30 @@ export const mcpServerTool = tool({
  * Export all available tools
  * These will be provided to the AI model to describe available capabilities
  */
+/**
+ * Tool to get interesting facts about numbers using the Numbers API
+ * This executes automatically without requiring human confirmation
+ */
+const getNumberFact = tool({
+  description: "Get an interesting fact about a specific number",
+  parameters: z.object({
+    number: z.number().describe("The number to get a fact about")
+  }),
+  execute: async ({ number }) => {
+    try {
+      const response = await fetch(`https://numbersapi.com/${number}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const fact = await response.text();
+      return fact;
+    } catch (error: any) {
+      const errorMessage = error.message || "Unknown error occurred";
+      return `Error getting number fact: ${errorMessage}`;
+    }
+  },
+});
+
 export const tools = {
   getWeatherInformation,
   getLocalTime,
@@ -308,6 +334,7 @@ export const tools = {
   forgetMemory,
   sendEmail,
   mcpServerTool,
+  getNumberFact,
 };
 
 /**
