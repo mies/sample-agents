@@ -26,27 +26,28 @@
   /* Animation */
   --animate-refresh: refresh 0.5s ease-in-out infinite;
 
-  /* Base colors */
+  /* Base colors - Fiberplane Theme */
   --color-black: #000;
   --color-white: #fff;
+  --color-fiberplane-orange: #F48120;
 
-  --color-neutral-50: oklch(0.985 0 0);
-  --color-neutral-100: oklch(0.97 0 0);
-  --color-neutral-150: oklch(0.96 0 0) /*new */;
-  --color-neutral-200: oklch(0.922 0 0);
-  --color-neutral-250: oklch(0.9 0 0) /* new */;
-  --color-neutral-300: oklch(0.87 0 0);
-  --color-neutral-400: oklch(0.708 0 0);
-  --color-neutral-450: oklch(0.62 0 0) /* new */;
-  --color-neutral-500: oklch(0.556 0 0);
-  --color-neutral-600: oklch(0.439 0 0);
-  --color-neutral-700: oklch(0.371 0 0);
-  --color-neutral-750: oklch(0.31 0 0) /* new */;
-  --color-neutral-800: oklch(0.269 0 0);
-  --color-neutral-850: oklch(0.23 0 0) /* new */;
-  --color-neutral-900: oklch(0.205 0 0);
-  --color-neutral-925: oklch(0.175 0 0) /* new */;
-  --color-neutral-950: oklch(0.145 0 0);
+  --color-neutral-50: #f9f9f9;
+  --color-neutral-100: #f2f2f2;
+  --color-neutral-150: #ebebeb;
+  --color-neutral-200: #e1e1e1;
+  --color-neutral-250: #d5d5d5;
+  --color-neutral-300: #c4c4c4;
+  --color-neutral-400: #9e9e9e;
+  --color-neutral-450: #8a8a8a;
+  --color-neutral-500: #757575;
+  --color-neutral-600: #616161;
+  --color-neutral-700: #484848;
+  --color-neutral-750: #3d3d3d;
+  --color-neutral-800: #2e2e2e;
+  --color-neutral-850: #242424;
+  --color-neutral-900: #1a1a1a;
+  --color-neutral-925: #141414;
+  --color-neutral-950: #0f0f0f;
 
   --color-red-650: oklch(0.55 0.238 27.4);
   --color-red-750: oklch(0.46 0.195 27.2);
@@ -71,8 +72,9 @@
   --text-color-ob-base-100: var(--color-neutral-500);
   --text-color-ob-base-200: var(--color-neutral-600);
   --text-color-ob-base-300: var(--color-neutral-900);
-  --text-color-ob-destructive: var(--color-red-600);
+  --text-color-ob-destructive: var(--color-red-650);
   --text-color-ob-inverted: var(--color-white);
+  --text-color-ob-fiberplane: var(--color-fiberplane-orange);
 
   /* ob-btn */
   --color-ob-btn-primary-bg: var(--color-neutral-750);
@@ -87,8 +89,8 @@
 
   --color-ob-btn-ghost-bg-hover: var(--color-neutral-150);
 
-  --color-ob-btn-destructive-bg: var(--color-red-600);
-  --color-ob-btn-destructive-bg-hover: var(--color-red-650);
+  --color-ob-btn-destructive-bg: var(--color-red-650);
+  --color-ob-btn-destructive-bg-hover: var(--color-red-750);
   --color-ob-btn-destructive-border: var(--color-red-400);
   --color-ob-btn-destructive-border-hover: var(--color-red-500);
 
@@ -116,6 +118,7 @@
   --text-color-ob-base-300: var(--color-neutral-50);
   --text-color-ob-destructive: var(--color-red-400);
   --text-color-ob-inverted: var(--color-neutral-900);
+  --text-color-ob-fiberplane: var(--color-fiberplane-orange);
 
   /* ob-btn */
   --color-ob-btn-primary-bg: var(--color-neutral-300);
@@ -139,6 +142,68 @@
   --color-ob-focus: var(--color-blue-800);
 }
 
+/* Fiberplane specific styles */
+.fiberplane-container {
+  @apply bg-neutral-950 text-neutral-50 border border-neutral-800;
+}
+
+.fiberplane-card {
+  @apply bg-neutral-900 border border-neutral-800 rounded-md p-4;
+}
+
+.fiberplane-header {
+  @apply bg-neutral-900 border-b border-neutral-800 px-4 py-3 flex items-center;
+}
+
+.fiberplane-sidebar {
+  @apply bg-neutral-950 border-r border-neutral-800 flex flex-col;
+}
+
+.fiberplane-sidebar-item {
+  @apply px-4 py-2 hover:bg-neutral-900 cursor-pointer flex items-center gap-2;
+}
+
+.fiberplane-sidebar-item.active {
+  @apply bg-neutral-900;
+}
+
+.fiberplane-orange {
+  color: var(--color-fiberplane-orange);
+}
+
+.fiberplane-orange-bg {
+  background-color: var(--color-fiberplane-orange);
+}
+
+.fiberplane-tool-row {
+  @apply border-b border-neutral-800 px-4 py-3 flex items-center justify-between hover:bg-neutral-850 cursor-pointer;
+}
+
+.fiberplane-details-cell {
+  @apply flex justify-end;
+}
+
+.fiberplane-badge {
+  @apply bg-neutral-800 text-neutral-200 text-xs px-2 py-0.5 rounded-full inline-flex items-center;
+}
+
+.fiberplane-event {
+  @apply flex items-start gap-2 py-2 border-b border-neutral-800;
+}
+
+.fiberplane-event-time {
+  @apply text-xs text-neutral-400;
+}
+
+.fiberplane-tab {
+  @apply px-4 py-2 cursor-pointer hover:bg-neutral-850;
+}
+
+.fiberplane-tab.active {
+  @apply border-b-2 border-fiberplane-orange;
+}
+
+/* Buttons and interactive elements */
 .btn {
   &.btn-primary {
     @apply border-ob-btn-primary-border bg-ob-btn-primary-bg text-ob-inverted shadow-xs;
@@ -250,16 +315,13 @@
 
   &:is(:where(.group):hover *) {
     @media (hover: hover) {
-      animation-play-state: running; /* play while group is hovered */
+      animation-play-state: running; /* play animation when group is hovered */
     }
   }
 }
 
 @keyframes db-card-animation {
   0% {
-    stroke-dashoffset: -200;
-  }
-  50% {
     stroke-dashoffset: 0;
   }
   100% {
@@ -267,28 +329,36 @@
   }
 }
 
-/* SVG filters */
 .pixelate {
-  filter: url(#pixelate);
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
 }
 
-/* Ripple filter */
 .ripple {
-  filter: url(#ripple);
+  @apply bg-clip-padding;
 }
 
 .float {
-  animation: float 5s linear infinite alternate;
+  animation: float 3s ease-in-out infinite;
 }
 
 @keyframes float {
-  to {
-    transform: translate(5px, 15px);
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0px);
   }
 }
 
 @keyframes refresh {
-  to {
-    transform: rotate(360deg) scale(0.9);
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
   }
 }
