@@ -1,5 +1,5 @@
 # Fiberplane's Agent Hackchallenge featuring Cloudflare Agents
-This repo/ templates extends the [Cloudflare Agents Starter Kit](https://github.com/cloudflare/agents-starter) with additional features and tools.
+This repo extends the [Cloudflare Agents Starter Kit](https://github.com/cloudflare/agents-starter) with additional features and tools.
 
 It includes the Fiberplane Agent Playground to inspect your agent's state, memory and behaviour. 
 
@@ -20,10 +20,10 @@ Just restart the application!
 
 To get insight into your agent visit the `/fp` endpoint! You can see the agent's state and memory there.
 
-![Fiberplane Agent Playground](img/agent-playground.png)
+<img src="img/agent-playground.png" width="500" alt="Fiberplane Agent Playground">
 
 You are all setup for continuing the challenge! You can take two pathes from here:
-1. Add new tools in `tools.ts` to empower your agent to do more intresting things, some ideas:
+1. Add new tools in [tools.ts](/src/tools.ts) to empower your agent to do more intresting things, some ideas:
     - Add a tool to get News from an API
     - Add a tool to get some Stock market data
     - ...
@@ -31,7 +31,7 @@ You are all setup for continuing the challenge! You can take two pathes from her
 
 
 ## 1 Agent Tools
-For adding tools we focus on the `tool.ts` file. If you add a new tool there your agent will have access to it. 
+For adding tools we focus on the [tools.ts](/src/tools.ts) file. If you add a new tool there your agent will have access to it. 
 
 ```typescript
 const getNumberFact = tool({
@@ -55,23 +55,24 @@ const getNumberFact = tool({
 });
 
 ```
-![Tool in Fiberplane Playground](img/adding-tool.png)
+<img src="img/adding-tool.png" width="300" alt="Tool in Fiberplane Playground">
 
 
 This tool will basically fetch the `numbersapi.com` and give a random fact about a number. Of course that is something the chat agent with OpenAI as LLM in the background can also do, but this way you don't eat up for credits and it is just a way to outline how to add a tool to the agent. 
 
 ## 2 MCP Server
-In order to give your agent more capabilities you can add an MCP server to the agent. You can connect to an existing MCP server or create your own using muppet.io.: 
+In order to give your agent more capabilities you can add an MCP server to the agent. You can connect to an existing MCP server or create your own using muppet: 
 - [This list](https://mcp.composio.dev/) inculdes some existing MCP servers ready to use. 
 - Use [muppet.io](https://www.muppet.dev/docs) to create your own MCP server
+- Here is an [example repo](https://github.com/muppet-dev/muppet/tree/main/examples) of a MCP server using muppet. 
 
 Simply chat to your agent and let it now you like to add an MCP server to it and provide it with the URL of the MCP server. 
 
 Once the MCP server is added you can see it in Fiberplane's agent playground.
-![mcp-added](/img/mcp-added.png)
+<img src="img/mcp-added.png" width="300" alt="mcp-added">
 
 And you can inspect the MCP server's capabilities in Fiberplane's agent playground.
-![mcp-inspected](/img/mcp-tools.png)
+<img src="img/mcp-tools.png" width="300" alt="mcp-inspected">
 
 
 
