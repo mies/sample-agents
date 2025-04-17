@@ -116,12 +116,24 @@ export default function Chat() {
             />
           </div>
 
-          <div className="flex-1">
-            <h2 className="font-semibold text-base">AI Chat Agent</h2>
+          <div className="flex-1 flex items-center">
+            <h2 className="font-semibold text-base mr-2">AI Chat Agent</h2>
+            <a 
+              href="/fp" 
+              className="flex items-center justify-center rounded-full h-8 w-8 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors mr-2"
+              title="Fiberplane Agent Playground"
+            >
+              🛝
+            </a>
           </div>
 
           <div className="flex items-center gap-2 mr-2">
-            <Bug size={16} />
+            <span 
+              className="flex items-center justify-center cursor-pointer" 
+              title="Debug mode"
+            >
+              🐜
+            </span>
             <Toggle
               toggled={showDebug}
               aria-label="Toggle debug mode"
@@ -136,7 +148,7 @@ export default function Chat() {
             className="rounded-full h-9 w-9"
             onClick={toggleTheme}
           >
-            {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+            {theme === "dark" ? <span className="text-lg">☀️</span> : <span className="text-lg">🌙</span>}
           </Button>
 
           <Button
@@ -146,7 +158,7 @@ export default function Chat() {
             className="rounded-full h-9 w-9"
             onClick={clearHistory}
           >
-            <Trash size={20} />
+            <span className="text-lg">🗑️</span>
           </Button>
         </div>
 
