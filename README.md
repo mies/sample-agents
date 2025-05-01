@@ -61,12 +61,22 @@ const getNumberFact = tool({
 This tool will basically fetch the `numbersapi.com` and give a random fact about a number. Of course that is something the chat agent with OpenAI as LLM in the background can also do, but this way you don't eat up for credits and it is just a way to outline how to add a tool to the agent. 
 
 ## 2 MCP Server
-In order to give your agent more capabilities you can add an MCP server to the agent. You can connect to an existing MCP server or create your own using muppet: 
-- [This list](https://mcp.composio.dev/) inculdes some existing MCP servers ready to use. 
+In order to give your agent more capabilities you can add an MCP server to the agent. You can connect to an existing MCP server or create your own using muppet:
+- [This list](https://mcp.composio.dev/) inculdes some existing MCP servers ready to use.
 - Use [muppet.io](https://www.muppet.dev/docs) to create your own MCP server
-- Here is an [example repo](https://github.com/muppet-dev/muppet/tree/main/examples) of a MCP server using muppet. 
+- Here is an [example repo](https://github.com/muppet-dev/muppet/tree/main/examples) of a MCP server using muppet.
 
-Simply chat to your agent and let it now you like to add an MCP server to it and provide it with the URL of the MCP server. 
+Simply chat to your agent and let it now you like to add an MCP server to it and provide it with the URL of the MCP server.
+
+### Authentication Options
+
+The agent supports two methods for authenticating with MCP servers:
+
+1. **OAuth Flow (Default)**: When you provide just the MCP server URL, the agent will initiate an OAuth authentication flow.
+
+2. **Bearer Token**: If your MCP server requires bearer token authentication, you can provide both the URL and the token directly in the chat. This is useful for servers that don't support OAuth or when you prefer direct authentication.
+
+Example: "Please add the MCP server at https://example.com/mcp with bearer token abc123xyz456"
 
 Once the MCP server is added you can see it in Fiberplane's agent playground.
 <img src="img/mcp-added.png" width="300" alt="mcp-added">

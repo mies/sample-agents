@@ -284,13 +284,17 @@ export const mcpServerTool = tool({
       .min(1)
       .url()
       .describe("The full URL of the remote MCP server"),
+    bearerToken: z
+      .string()
+      .optional()
+      .describe("Optional bearer token for authentication"),
   }),
-  execute: async ({ url }) => {
+  execute: async ({ url, bearerToken }) => {
     const agent = agentContext.getStore();
     if (!agent) {
       throw new Error("Agent not found");
     }
-    return agent.addMcpServer(url);
+    return agent.addMcpServer(url, bearerToken);
   },
 });
 
